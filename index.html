@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro ATS Architect v15 (Mobile Responsive)</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;700&family=Roboto+Slab:wght@400;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- UI THEME --- */
+        body { 
+            background: #f8fafc;
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            font-family: 'Inter', sans-serif; 
+            color: #1e293b;
+            overflow: hidden; /* Default for Desktop */
+        }
+
+        /* Responsive Scroll for Mobile */
+        @media (max-width: 1024px) {
+            body { height: auto; overflow-y: auto; }
+        }
+
+        /* Header */
+        header { 
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid #e2e8f0;
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; z-index: 50; position: sticky; top: 0;
+        }
+
+        /* --- LAYOUT --- */
+        .main-layout { 
+            display: flex; 
+            flex: 1; 
+            overflow: hidden; 
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 400px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex; flex-direction: column; gap: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Preview Area */
+        .preview-area {
+            flex: 1;
+            background: #cbd5e1;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        /* --- RESPONSIVE BREAKPOINTS --- */
+        @media (max-width: 1024px) {
+            .main-layout { flex-direction: column; overflow: visible; }
+            .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #e2e8f0; }
+            .preview-area { padding: 20px; min-height: 500px; }
+        }
+
+        /* --- THE RESUME PAPER (A4) --- */
+        #resume-container {
+            transform-origin: top center;
+            transition: transform 0.3s ease;
+        }
+
+        #resume-paper {
+            width: 210mm;
+            min-height: 297mm; /* Standard A4 Height */
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 15mm 18mm; 
+            box-sizing: border-box;
+            outline: none;
+            overflow: hidden; 
+        }
+
+        /* --- TEMPLATE STYLES --- */
+        .t-modern { font-family: 'Inter', sans-serif; color: #334155; }
+        .t-modern h1 { font-size: 26pt; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin-bottom: 5px; line-height: 1; }
+        .t-modern .contact { font-size: 9pt; color: #64748b; border-bottom: 2px solid #bae6fd; padding-bottom: 10px; margin-bottom: 15px; }
+        .t-modern h2 { font-size: 11pt; font-weight: 700; color: #0284c7; text-transform: uppercase; margin-top: 15px; border-left: 4px solid #0284c7; padding-left: 8px; background: #f0f9ff; padding-top: 2px; padding-bottom: 2px; }
+        .t-modern h3 { font-size: 10.5pt; font-weight: 700; color: #0f172a; margin-top: 8px; }
+        .t-modern p, .t-modern li { font-size: 9.5pt; margin-bottom: 2px; }
+
+        .t-executive { font-family: 'Merriweather', serif; color: #111; }
+        .t-executive h1 { font-size: 24pt; text-align: center; margin-bottom: 5px; }
+        .t-executive .contact { text-align: center; font-size: 9pt; color: #555; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; font-family: 'Inter', sans-serif; }
+        .t-executive h2 { font-size: 12pt; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid #333; margin-top: 20px; letter-spacing: 1px; }
+
+        .t-teal { font-family: 'Lato', sans-serif; color: #374151; }
+        .t-teal h1 { font-size: 28pt; font-weight: 300; color: #0f766e; text-transform: uppercase; letter-spacing: 2px; }
+        .t-teal .contact { font-size: 9pt; color: #99f6e4; background: #115e59; padding: 5px 10px; margin-bottom: 20px; color: white; border-radius: 4px; display: inline-block; }
+        .t-teal h2 { font-size: 10.5pt; font-weight: 700; color: #0d9488; text-transform: uppercase; margin-top: 18px; border-bottom: 1px dotted #0d9488; }
+
+        .t-royal { font-family: 'Playfair Display', serif; color: #2e1065; }
+        .t-royal h1 { font-size: 28pt; color: #4c1d95; text-align: center; font-weight: 700; }
+        .t-royal .contact { font-family: 'Inter', sans-serif; text-align: center; font-size: 9pt; color: #7c3aed; margin-bottom: 20px; }
+        .t-royal h2 { font-family: 'Open Sans', sans-serif; font-size: 10pt; font-weight: 700; color: white; background: #4c1d95; padding: 4px 10px; text-transform: uppercase; margin-top: 20px; border-radius: 2px; }
+
+        .t-crimson { font-family: 'Roboto Slab', serif; color: #450a0a; }
+        .t-crimson h1 { font-size: 26pt; color: #9f1239; border-bottom: 3px solid #9f1239; }
+        .t-crimson h2 { font-size: 12pt; font-weight: 700; color: #881337; margin-top: 20px; text-transform: uppercase; }
+
+        .t-emerald { font-family: 'Open Sans', sans-serif; color: #064e3b; }
+        .t-emerald h1 { font-size: 28pt; font-weight: 800; color: #047857; }
+        .t-emerald h2 { font-size: 11pt; font-weight: 700; color: #065f46; border-bottom: 2px solid #10b981; margin-top: 20px; text-transform: uppercase; }
+
+        /* UI UTILS */
+        .btn-template { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; font-size: 10px; border-radius: 6px; font-weight: 600; color: #64748b; transition: all 0.2s; }
+        .btn-template:hover { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
+        .btn-template.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+        /* Loader */
+        .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .spinner { width: 40px; height: 40px; border: 4px solid #cbd5e1; border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Mobile Adjustments for Header Buttons */
+        @media (max-width: 640px) {
+            .btn-header span { display: none; }
+            .btn-header { padding: 8px; }
+            .logo-text { display: none; }
+        }
+    </style>
+</head>
+<body onload="fitPaperToScreen()" onresize="fitPaperToScreen()">
+
+    <header>
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">Ai</div>
+            <div class="logo-text">
+                <h1 class="font-bold text-slate-800 text-sm">Pro ATS Architect</h1>
+                <span class="text-[10px] text-indigo-600 font-bold tracking-wide">MOBILE</span>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="autoFitContent()" class="btn-header flex items-center gap-1 px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 text-xs font-bold rounded shadow transition" title="Auto-Fit Content">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                <span>Fit Page</span>
+            </button>
+            <button onclick="exportWord()" class="btn-header flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded hover:bg-slate-50 transition shadow-sm" title="Download Word">
+                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                <span>Word</span>
+            </button>
+            <button onclick="downloadPDF()" class="btn-header flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow transition" title="Download PDF">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>PDF</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        
+        <div class="sidebar">
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <label class="text-[10px] font-bold text-slate-500 uppercase">1. Gemini API</label>
+                <div class="flex gap-2 mt-1">
+                    <input type="password" id="apiKey" class="w-full p-2 text-xs border rounded" placeholder="Paste Key">
+                    <button onclick="loadModels()" id="connBtn" class="bg-slate-800 text-white px-3 text-xs rounded font-bold">Load</button>
+                </div>
+                <select id="modelSelect" class="w-full mt-2 p-1 text-xs border rounded bg-white" disabled><option>Wait...</option></select>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase">2. Upload Resume</label>
+                <input type="file" id="resumeFile" accept="application/pdf" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mt-1"/>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase">3. Job Description</label>
+                <textarea id="jobDescription" class="w-full h-24 p-2 text-xs border rounded mt-1 resize-none focus:ring-1 focus:ring-blue-500" placeholder="Paste JD..."></textarea>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">4. Style</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setTemplate('modern')" id="btn-modern" class="btn-template active">Modern</button>
+                    <button onclick="setTemplate('executive')" id="btn-executive" class="btn-template">Exec</button>
+                    <button onclick="setTemplate('teal')" id="btn-teal" class="btn-template">Teal</button>
+                    <button onclick="setTemplate('royal')" id="btn-royal" class="btn-template">Royal</button>
+                    <button onclick="setTemplate('crimson')" id="btn-crimson" class="btn-template">Crimson</button>
+                    <button onclick="setTemplate('emerald')" id="btn-emerald" class="btn-template">Emerald</button>
+                </div>
+            </div>
+
+            <button onclick="processResume()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md transition">
+                Generate Resume
+            </button>
+
+            <div id="resultsPanel" class="hidden border-t border-slate-200 pt-3">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase">ATS Impact</h3>
+                    <div id="scoreAfter" class="text-xs font-bold text-green-600 bg-green-50 px-2 rounded">--</div>
+                </div>
+                <div id="changesList" class="text-[10px] text-slate-600 space-y-1 bg-slate-50 p-2 rounded max-h-40 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <div class="preview-area">
+            <div id="scale-wrapper">
+                <div id="resume-container">
+                    <div id="resume-paper" class="t-modern" contenteditable="true">
+                        <div class="flex flex-col items-center justify-center h-96 text-gray-300 pointer-events-none">
+                            <h2 class="text-2xl font-bold">Resume Canvas</h2>
+                            <p class="text-sm">Upload PDF & Paste JD to begin.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="loader" class="loader-overlay hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center text-center">
+            <div class="spinner mb-4"></div>
+            <h3 class="font-bold text-slate-800">Optimizing...</h3>
+            <p class="text-xs text-slate-500 mt-1">Applying keywords & formatting</p>
+        </div>
+    </div>
+
+    <script>
+        // --- UI UTILS ---
+        function setTemplate(name) {
+            const paper = document.getElementById('resume-paper');
+            paper.className = '';
+            paper.classList.add(`t-${name}`);
+            document.querySelectorAll('.btn-template').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${name}`).classList.add('active');
+        }
+
+        // --- RESPONSIVE SCALING LOGIC (Visual Only) ---
+        function fitPaperToScreen() {
+            const container = document.getElementById('scale-wrapper');
+            const paperWidth = 794; // approx A4 pixel width
+            const screenWidth = document.querySelector('.preview-area').clientWidth - 40; // minus padding
+
+            if (screenWidth < paperWidth) {
+                const scale = screenWidth / paperWidth;
+                container.style.transform = `scale(${scale})`;
+                container.style.transformOrigin = 'top center';
+                container.style.height = `${(1123 * scale) + 50}px`; // Adjust container height
+            } else {
+                container.style.transform = 'scale(1)';
+                container.style.height = 'auto';
+            }
+        }
+
+        // --- CONTENT AUTO-FIT (Actual resizing) ---
+        function autoFitContent() {
+            const paper = document.getElementById('resume-paper');
+            paper.style.zoom = 1;
+            if (paper.scrollHeight > 1123) { // A4 height approx
+                const scale = 1123 / paper.scrollHeight;
+                paper.style.zoom = Math.max(scale, 0.7);
+                alert("Content fitted to single page.");
+            } else {
+                alert("Content already fits!");
+            }
+        }
+
+        // --- CORE AI ---
+        async function loadModels() {
+            const key = document.getElementById('apiKey').value;
+            const select = document.getElementById('modelSelect');
+            const btn = document.getElementById('connBtn');
+            if(!key) return alert("Enter Key");
+
+            try {
+                btn.innerText = "...";
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                const data = await res.json();
+                if(data.error) throw new Error(data.error.message);
+                select.innerHTML = "";
+                data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent")).forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.name;
+                    opt.text = m.displayName.replace("Google ", "");
+                    if(m.name.includes("flash")) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                select.disabled = false;
+                btn.innerText = "✓";
+                btn.classList.replace("bg-slate-800","bg-green-600");
+            } catch(e) { alert(e.message); btn.innerText = "Retry"; }
+        }
+
+        async function extractPDF(file) {
+            const buffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(buffer).promise;
+            let txt = "";
+            for(let i=1; i<=pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                txt += content.items.map(s => s.str).join(" ") + "\n";
+            }
+            return txt;
+        }
+
+        async function processResume() {
+            const key = document.getElementById('apiKey').value;
+            const model = document.getElementById('modelSelect').value;
+            const file = document.getElementById('resumeFile').files[0];
+            const jd = document.getElementById('jobDescription').value;
+            const loader = document.getElementById('loader');
+
+            if(!key || !file || !jd) return alert("Missing Inputs");
+            
+            loader.classList.remove('hidden');
+            document.getElementById('resultsPanel').classList.add('hidden');
+
+            try {
+                const resumeText = await extractPDF(file);
+                const prompt = `
+                    Act as an Expert ATS Resume Writer.
+                    TASK: Rewrite resume to target JD.
+                    
+                    OUTPUT RULES (JSON ONLY):
+                    {
+                      "html": "string (Pure HTML with <section>, <h1>, <h2>, <ul>)",
+                      "score_before": number,
+                      "score_after": 98,
+                      "changes": ["string", "string"]
+                    }
+                    
+                    HTML RULES:
+                    - Header: <h1>Name</h1> <div class="contact">Info</div>
+                    - Content: Use STAR method. No labels like 'Action:'.
+                    - KEEP IT CONCISE. Try to fit 1 page.
+                    
+                    RESUME: ${resumeText.substring(0,5000)}
+                    JD: ${jd.substring(0,3000)}
+                `;
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await res.json();
+                const raw = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '');
+                const json = JSON.parse(raw);
+
+                document.getElementById('resume-paper').innerHTML = json.html;
+                document.getElementById('scoreAfter').innerText = json.score_after + "%";
+                
+                const list = document.getElementById('changesList');
+                list.innerHTML = "";
+                json.changes.forEach(c => list.innerHTML += `<div>✓ ${c}</div>`);
+                
+                document.getElementById('resultsPanel').classList.remove('hidden');
+                
+                // Trigger auto-resize logic for mobile
+                fitPaperToScreen();
+
+            } catch(e) { alert("Error: "+e.message); } finally { loader.classList.add('hidden'); }
+        }
+
+        // --- EXPORT ---
+        function downloadPDF() {
+            const paper = document.getElementById('resume-paper');
+            // Reset transforms before print
+            const wrapper = document.getElementById('scale-wrapper');
+            const originalTransform = wrapper.style.transform;
+            wrapper.style.transform = 'scale(1)';
+
+            const opt = {
+                margin: 0,
+                filename: 'Tailored_Resume.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(paper).save().then(() => {
+                // Restore mobile view
+                wrapper.style.transform = originalTransform;
+            });
+        }
+
+        function exportWord() {
+            const content = document.getElementById('resume-paper').innerHTML;
+            const styles = document.querySelector('style').innerHTML;
+            const blob = new Blob(['\ufeff', `<html><head><style>${styles}</style></head><body>${content}</body></html>`], {type:'application/msword'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Resume.doc';
+            link.click();
+        }
+
+        // Add Listener for Window Resize
+        window.addEventListener('resize', fitPaperToScreen);
+    </script>
+</body>
+</html>
